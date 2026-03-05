@@ -9,8 +9,31 @@ import User from "../models/User.js";
 // 5. Call next()
 // 6. If invalid → return 401
 
-const authMiddleware = async (req, res, next) => {
-  //  implement here
+
+const authMiddleware = (req, res, next) => {
+
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "No token provided" });
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  try {
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    req.user = { _id: decoded.id };  
+
+    next();
+
+  } catch (error) {
+
+    return res.status(401).json({ message: "Invalid token" });
+
+  }
+
 };
 
 export default authMiddleware;
